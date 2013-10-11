@@ -1,22 +1,40 @@
 * Tasks
 
-- Refactor =uri.html= so the 3 tables are not repeated as hardcode
-- Rewrite code using =urllib2= to use =requests=
-- Handle timeouts and other reasons why HTTP request for URL might be broken
-- /page doesn't handle URIs with # in them, use POST method instead of GET
-- Handle Content-Type: sometimes the page is returned as text/html or some other shit, which leads to error, instead of graceful degradation; try supplying http://launchpad.net/~sindikat
-- http://prefix.cc
-- List all URIs of the KB (do i need that?)
-- Move from Graph to ConjunctiveGraph (or something Dataset)
-- Serialize and parse TriX / Alternatively use persistence (Sleepycat)
-- When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
-- Manually add a triple (no Ajax at this point)
-- Edit a triple
-- Delete a triple
-- Delete a named graph with all triples
-- Unify two named graphs
-- jQuery, Ajax, (possibly Backbone.js) - for in-place operation
-- Refactor dirty =result_to_xss= function
-- Manually create and populate named graphs
-- Maintain versions of named graphs; specifically, put timestamp of last population from outer source
-- Move from rdflib to Virtuoso (or Sesame)
+** TODO Refactor uri.html
+   so the 3 tables are not repeated as hardcode
+** TODO [#A] Rewrite code using =urllib2= to use =requests=
+** TODO [#A] Handle timeouts
+   Also: other reasons why HTTP request for URL might be broken
+** TODO [#A] /page doesn't handle URIs with # in them
+   use POST method instead of GET?
+** TODO [#A] Handle Content-Type
+   sometimes the page is returned as text/html or some other shit, which leads to error (for example, xml.sax._exceptions.SAXParseException), instead of graceful degradation; try supplying http://launchpad.net/~sindikat
+** TODO [#A] Move from Graph to ConjunctiveGraph (or Dataset)
+** TODO [#A] Serialize and parse TriX / Alternatively use persistence (Sleepycat)
+** TODO [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
+** TODO [#A] Only HTTP URIs should be dereferenced, not mailto: or tel:
+   But maybe there should be a possibility to query KB for all mentions of the particular mailto:, tel: or a Literal
+** TODO [#A] Go to the URL directly
+   In addition to just dereferencing it inside my web-service
+** TODO Manually add a triple (no Ajax at this point)
+** TODO Edit a triple
+** TODO Delete a triple
+** TODO Delete a named graph with all triples
+** TODO Unify two named graphs
+** TODO [#C] jQuery, Ajax, (possibly Backbone.js) - for in-place operation
+** TODO Refactor dirty =result_to_xss= function
+** TODO Manually create and populate named graphs
+** TODO [#A] Maintain versions of named graphs
+   specifically, put timestamp of last population from outer source
+** TODO Gather data through RDFa
+** TODO Gather data through SPARQL endpoints (maintain list of SPARQL endpoints?)
+** TODO SPARQL endpoint
+** TODO SPARUL endpoint
+** TODO [#C] http://prefix.cc
+** TODO [#C] List all URIs of the KB (do i need that?)
+** TODO [#C] All subjects, all predicates, all objects
+** TODO [#C] Move from rdflib to Virtuoso (or Sesame)
+** TODO [#C] Use Virtuoso Sponger to crawl for data
+** TODO [#C] Collapse "As subject", "As predicate", "As object"
+** TODO [#C] Flash info about how URI was derefenced
+   Flash additional info, for example if URI wasn't successfully dereferenced, print the error: maybe it was just HTML, maybe there was a parser error, maybe the URL is out of reach;
