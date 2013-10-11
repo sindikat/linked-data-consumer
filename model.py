@@ -54,6 +54,9 @@ def sparql_query(graph, query):
         if not href:
             href = string
 
+        # replace octothorpe with URL encoding %23
+        href = href.replace('#', '%23')
+
         result = '<a href="' + href + '">' + string + '</a>'
         return result
 
@@ -87,8 +90,10 @@ def load_rdf(uri):
     '''Accepts URI, returns Graph'''
     new_graph = Graph()
     try:
+        print uri
         new_graph.parse(uri)
-    except Exception:
+    except Exception, e:
+        print e, type(e)
         pass
     return new_graph
 
