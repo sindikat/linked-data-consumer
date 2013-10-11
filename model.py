@@ -1,6 +1,5 @@
 from rdflib import Graph, URIRef
 from posixpath import join
-from urllib2 import urlopen, Request, URLError
 
 DATAFILE = 'data.ttl'
 HTTP = 'http://'
@@ -86,24 +85,11 @@ def sparql_query(graph, query):
 
 def load_rdf(uri):
     '''Accepts URI, returns Graph'''
-
-    # headers are taken from
-    # http://richard.cyganiak.de/blog/2008/03/what-is-your-rdf-browsers-accept-header/
-    headers = 'application/rdf+xml, application/xhtml+xml;q=0.3, text/xml;q=0.2, application/xml;q=0.2, text/html;q=0.3, text/plain;q=0.1, text/n3, text/rdf+n3;q=0.5, application/x-turtle;q=0.2, text/turtle;q=1'
-
     new_graph = Graph()
-
-    req = Request(uri)
-    req.add_header('Accept', headers)
-
-    # rewrite the following using requests library
     try:
-        resp = urlopen(req)
-        content = resp.read()
-        new_graph.parse(data=content)
-    except URLError:
+        new_graph.parse(uri)
+    except Exception:
         pass
-
     return new_graph
 
 def save(graph):
