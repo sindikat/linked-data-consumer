@@ -2,17 +2,14 @@
 
 ** TODO Refactor uri.html
    so the 3 tables are not repeated as hardcode
-** TODO [#A] Rewrite code using =urllib2= to use =requests=
 ** TODO [#A] Handle timeouts
    Also: other reasons why HTTP request for URL might be broken
 ** DONE [#A] /page doesn't handle URIs with # in them
    Old idea was to use POST method instead of GET. But then i just replaced # with %23 in URLs, and now everything is working. Currently i don't see the point in using POST requests.
-** TODO [#A] Handle Content-Type
-   sometimes the page is returned as text/html or some other shit, which leads to error (for example, xml.sax._exceptions.SAXParseException), instead of graceful degradation; try supplying http://launchpad.net/~sindikat
 ** TODO types of links for checking
    - http://launchpad.net/~sindikat
    - http://www.w3.org/1999/02/22-rdf-syntax-ns#type (w3.org is out of reach; also has #)
-   - ...
+   - mailto:leigh@ldodds.com - shouldn't be allowed to put into address bar in the first place
 ** TODO [#A] Move from Graph to ConjunctiveGraph (or Dataset)
 ** TODO [#A] Serialize and parse TriX / Alternatively use persistence (Sleepycat)
 ** TODO [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
@@ -44,3 +41,7 @@
    Flash additional info, for example if URI wasn't successfully dereferenced, print the error: maybe it was just HTML, maybe there was a parser error, maybe the URL is out of reach;
 ** TODO [#C] Exception logging
    For example, the HTTPError
+** TODO [#C] Download module pyMicrodata
+   for parsing Microdata
+** TODO Possibly use requests library
+   Instead of relying on "smart" Graph.parse(), which doesn't allow timeouts for example

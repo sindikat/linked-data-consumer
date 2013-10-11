@@ -90,7 +90,6 @@ def load_rdf(uri):
     '''Accepts URI, returns Graph'''
     new_graph = Graph()
     try:
-        print uri
         new_graph.parse(uri)
     except Exception, e:
         print e, type(e)
