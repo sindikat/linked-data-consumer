@@ -1,0 +1,3 @@
+* Tasks
+
+- Refactor =uri.html= so the 3 tables are not repeated as hardcode

@@ -1,0 +1,33 @@
+@prefix ns: <http://abstractnonsense.net/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix admin: <http://webns.net/mvcb/> .
+@prefix cc: <http://creativecommons.org/ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+ns:foaf
+    admin:errorReportsTo <mailto:leigh@ldodds.com> ;
+    admin:generatorAgent <http://www.ldodds.com/foaf/foaf-a-matic> ;
+    a foaf:PersonalProfileDocument ;
+    cc:license <http://creativecommons.org/licenses/by/3.0/> ;
+    dc:title "Mirzhan Irkegulov's FOAF file" ;
+    foaf:maker ns:i ;
+    foaf:primaryTopic ns:i .
+
+ns:i
+    a foaf:Person ;
+    foaf:familyName "Irkegulov" ;
+    foaf:givenName "Mirzhan" ;
+    foaf:homepage <http://abstractnonsense.net> ;
+    foaf:mbox_sha1sum "47dcda4413c88cf9d3595f7e86774c7da9bc6692" ;
+    foaf:name "Mirzhan Irkegulov" ;
+    foaf:nick "sindikat" ;
+    foaf:account <http://www.reddit.com/user/sindikat/> ;
+    foaf:based_near <http://dbpedia.org/resource/Almaty> ;
+    foaf:gender "male" ;
+    foaf:interest <http://dbpedia.org/resource/Functional_programming> ,
+                  <http://dbpedia.org/resource/Discrete_mathematics> ;
+    foaf:jabberID "sindikat@jabber.so36.net" ;
+    foaf:myersBriggs "INTP" ;
+    foaf:openid <http://launchpad.net/~sindikat> .
