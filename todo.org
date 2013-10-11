@@ -1,3 +1,22 @@
 * Tasks
 
 - Refactor =uri.html= so the 3 tables are not repeated as hardcode
+- Rewrite code using =urllib2= to use =requests=
+- Handle timeouts and other reasons why HTTP request for URL might be broken
+- /page doesn't handle URIs with # in them, use POST method instead of GET
+- Handle Content-Type: sometimes the page is returned as text/html or some other shit, which leads to error, instead of graceful degradation; try supplying http://launchpad.net/~sindikat
+- http://prefix.cc
+- List all URIs of the KB (do i need that?)
+- Move from Graph to ConjunctiveGraph (or something Dataset)
+- Serialize and parse TriX / Alternatively use persistence (Sleepycat)
+- When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
+- Manually add a triple (no Ajax at this point)
+- Edit a triple
+- Delete a triple
+- Delete a named graph with all triples
+- Unify two named graphs
+- jQuery, Ajax, (possibly Backbone.js) - for in-place operation
+- Refactor dirty =result_to_xss= function
+- Manually create and populate named graphs
+- Maintain versions of named graphs; specifically, put timestamp of last population from outer source
+- Move from rdflib to Virtuoso (or Sesame)
