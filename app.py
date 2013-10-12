@@ -11,8 +11,7 @@ app = Flask(__name__, static_url_path='')
 def index():
     return render_template('index.html')
 
-# for some reason route '/<path:uri>' doesn't work, Flask says 404,
-# only non-root directory works, like '/page/<path:uri>'
+# '/<path:uri>' doesn't work because of static_url_path, think
 @app.route('/page/<path:uri>')
 def article(uri):
     '''Get all information about this URI from KB'''
