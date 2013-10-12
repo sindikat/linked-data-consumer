@@ -31,6 +31,7 @@
 ** TODO Gather data through SPARQL endpoints (maintain list of SPARQL endpoints?)
 ** TODO SPARQL endpoint
 ** TODO SPARUL endpoint
+** TODO Use namespaces in the front-end
 ** TODO [#C] http://prefix.cc
 ** TODO [#C] List all URIs of the KB (do i need that?)
 ** TODO [#C] All subjects, all predicates, all objects

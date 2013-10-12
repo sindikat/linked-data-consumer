@@ -1,5 +1,5 @@
 *.pyc
 *.pyo
 venv
-data
-data.ttl
+data*
+test*

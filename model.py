@@ -1,16 +1,15 @@
 from rdflib import Graph, URIRef
 from posixpath import join
 
-DATAFILE = 'data.ttl'
+DATAPATH = 'data'
 HTTP = 'http://'
 # DOMAIN = 'abstractnonsense.net'
 DOMAIN = 'localhost:17000'
 
-g = Graph()
+g = Graph(store='Sleepycat')
 # n = Namespace(join(HTTP, DOMAIN, ''))
 
-# Init graph
-g.parse(DATAFILE, format='n3')
+g.open(DATAPATH, create=False)
 
 def get_uri(uri):
     '''get uri as subject using sparql query'''
@@ -97,9 +96,10 @@ def load_rdf(uri):
     return new_graph
 
 def save(graph):
-    '''Serialize graph to Turtle.
+    '''Save Graph in the DB backend.
 
     SIDE EFFECTS
     '''
-    graph.serialize('data.ttl', format='n3')
+    g.close()
+    g.open(DATAPATH, create=False)
     return None
