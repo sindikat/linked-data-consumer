@@ -1,4 +1,4 @@
-from rdflib import Graph, URIRef
+from rdflib import Graph, Dataset, URIRef
 from posixpath import join
 
 DATAPATH = 'data'
@@ -6,18 +6,19 @@ HTTP = 'http://'
 # DOMAIN = 'abstractnonsense.net'
 DOMAIN = 'localhost:17000'
 
-g = Graph(store='Sleepycat')
+ds = Dataset(store='Sleepycat')
 # n = Namespace(join(HTTP, DOMAIN, ''))
 
-g.open(DATAPATH, create=False)
+ds.open(DATAPATH, create=False)
 
 def get_uri(uri):
     '''get uri as subject using sparql query'''
-    global g # dirty
+    global ds # dirty
 
     load_graph = load_rdf(uri)
-    g += load_graph
-    save(g)
+    named_graph = ds.graph(uri)
+    named_graph += load_graph
+    save(ds)
 
     query_template_subject = '''select ?p ?o
     where {{
@@ -39,9 +40,9 @@ def get_uri(uri):
     query_predicate = query_template_predicate.format(uri)
     query_object = query_template_object.format(uri)
 
-    subjects = sparql_query(g, query_subject)
-    predicates = sparql_query(g, query_predicate)
-    objects = sparql_query(g, query_object)
+    subjects = sparql_query(named_graph, query_subject)
+    predicates = sparql_query(named_graph, query_predicate)
+    objects = sparql_query(named_graph, query_object)
 
     return (subjects, predicates, objects)
 
@@ -100,6 +101,6 @@ def save(graph):
 
     SIDE EFFECTS
     '''
-    g.close()
-    g.open(DATAPATH, create=False)
+    graph.close()
+    graph.open(DATAPATH, create=False)
     return None
