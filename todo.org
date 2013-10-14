@@ -6,18 +6,27 @@
    Also: other reasons why HTTP request for URL might be broken
 ** DONE [#A] /page doesn't handle URIs with # in them
    Old idea was to use POST method instead of GET. But then i just replaced # with %23 in URLs, and now everything is working. Currently i don't see the point in using POST requests.
+
+   Also, why Flask routing doesn't support #? It strips it from <path:uri>.
 ** TODO types of links for checking
    - http://launchpad.net/~sindikat
-   - http://www.w3.org/1999/02/22-rdf-syntax-ns#type (w3.org is out of reach; also has #)
+   - http://www.w3.org/1999/02/22-rdf-syntax-ns%23type (w3.org is out of reach; also has #)
+   - http://www%23a - incorrect URL whatsoever
    - mailto:leigh@ldodds.com - shouldn't be allowed to put into address bar in the first place
-** TODO [#A] Move from Graph to ConjunctiveGraph (or Dataset)
-** TODO [#A] Serialize and parse TriX / Alternatively use persistence (Sleepycat)
-** TODO [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
+** DONE [#A] Move from Graph to ConjunctiveGraph
+** DONE [#A] Use persistence (Sleepycat)
+** DONE [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
 ** TODO [#A] Only HTTP URIs should be dereferenced, not mailto: or tel:
    But maybe there should be a possibility to query KB for all mentions of the particular mailto:, tel: or a Literal
 ** TODO [#A] Go to the URL directly
    In addition to just dereferencing it inside my web-service
 ** TODO Manually add a triple (no Ajax at this point)
+** TODO Try non-existent URL
+   I tried http://localhost:17000/uri/http://ex.org/a#b. I got up with:
+
+| As subject                   |                                                |
+| Predicate                    | Object                                         |
+| http://www.w3.org/ns/md#item | http://www.w3.org/1999/02/22-rdf-syntax-ns#nil |
 ** TODO Edit a triple
 ** TODO Delete a triple
 ** TODO Delete a named graph with all triples

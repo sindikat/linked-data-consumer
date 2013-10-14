@@ -12,7 +12,7 @@ def index():
     return render_template('index.html')
 
 # '/<path:uri>' doesn't work because of static_url_path, think
-@app.route('/page/<path:uri>')
+@app.route('/uri/<path:uri>')
 def article(uri):
     '''Get all information about this URI from KB'''
     subjects, predicates, objects = get_uri(uri)

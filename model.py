@@ -1,24 +1,23 @@
-from rdflib import Graph, Dataset, URIRef
+from rdflib import Graph, ConjunctiveGraph, URIRef
 from posixpath import join
+from urllib import quote, unquote
 
 DATAPATH = 'data'
 HTTP = 'http://'
 # DOMAIN = 'abstractnonsense.net'
 DOMAIN = 'localhost:17000'
+STORE = 'Sleepycat'
+# NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
 
-ds = Dataset(store='Sleepycat')
-# n = Namespace(join(HTTP, DOMAIN, ''))
-
-ds.open(DATAPATH, create=False)
+cg = ConjunctiveGraph(store=STORE)
+cg.open(DATAPATH, create=False) # it stays open all the time, just commits are made
 
 def get_uri(uri):
     '''get uri as subject using sparql query'''
-    global ds # dirty
+    global cg # dirty
 
-    load_graph = load_rdf(uri)
-    named_graph = ds.graph(uri)
-    named_graph += load_graph
-    save(ds)
+    load_rdf(cg, uri) # SIDE EFFECTS
+    cg.commit() # SIDE EFFECTS
 
     query_template_subject = '''select ?p ?o
     where {{
@@ -40,9 +39,9 @@ def get_uri(uri):
     query_predicate = query_template_predicate.format(uri)
     query_object = query_template_object.format(uri)
 
-    subjects = sparql_query(named_graph, query_subject)
-    predicates = sparql_query(named_graph, query_predicate)
-    objects = sparql_query(named_graph, query_object)
+    subjects = sparql_query(cg, query_subject)
+    predicates = sparql_query(cg, query_predicate)
+    objects = sparql_query(cg, query_object)
 
     return (subjects, predicates, objects)
 
@@ -54,10 +53,14 @@ def sparql_query(graph, query):
         if not href:
             href = string
 
+        # assume utf-8 encoding
+        if isinstance(href, unicode):
+            href = href.encode('utf-8')
         # replace octothorpe with URL encoding %23
-        href = href.replace('#', '%23')
+        href = quote(href, safe='/:')
 
         result = '<a href="' + href + '">' + string + '</a>'
+        print result
         return result
 
     def result_to_xss(query_result):
@@ -71,7 +74,7 @@ def sparql_query(graph, query):
                 # URIRef to <a>, Literal to just string
                 if isinstance(element, URIRef):
                     string = element.toPython()
-                    url = HTTP + DOMAIN + '/page/' + string
+                    url = HTTP + DOMAIN + '/uri/' + string
                     element_modified = htmlize(string, url)
                 else:
                     element_modified = element.toPython()
@@ -86,21 +89,17 @@ def sparql_query(graph, query):
 
     return final
 
-def load_rdf(uri):
-    '''Accepts URI, returns Graph'''
-    new_graph = Graph()
+def load_rdf(cg, uri):
+    '''Accepts ConjunctiveGraph and URI (as string), returns None.
+
+    SIDE EFFECTS
+    '''
+    uri_unquoted = unquote(uri)
+    graph_identifier = URIRef(uri_unquoted)
+    new_graph = cg.get_context(graph_identifier)
     try:
         new_graph.parse(uri)
     except Exception, e:
         print e, type(e)
         pass
-    return new_graph
-
-def save(graph):
-    '''Save Graph in the DB backend.
-
-    SIDE EFFECTS
-    '''
-    graph.close()
-    graph.open(DATAPATH, create=False)
     return None
