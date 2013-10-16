@@ -15,49 +15,43 @@
 #}
 
 {% block content %}
+{# this variable could be generated using code, but i didn't find an elegant way #}
+{% set triple_template = [{'title': 'subject',
+                           'cols': ['predicate', 'object'],
+                           'resources': subjects},
+                          {'title': 'predicate',
+                           'cols': ['subject', 'object'],
+                           'resources': predicates},
+                          {'title': 'object',
+                           'cols': ['subject', 'predicate'],
+                           'resources': objects}] %}
+
 <h1>URI: <strong>{{ uri }}</strong></h1>
-<h1>As subject</h1>
-<table class="table">
-  <tr>
-    <th>Predicate</th>
-    <th>Object</th>
-  </tr>
-  {% for row in subjects %}
-  <tr>
-    {% for e in row %}
-    <td>{{ e | safe }}</td>
-    {% endfor %}
-  </tr>
-  {% endfor %}
-</table>
 
-<h1>As predicate</h1>
+{% for triple_element in triple_template %}
+{% set cols = triple_element.cols %}
+{% set resources = triple_element.resources %}
+<h1>As {{ triple_element.title }}</h1>
 <table class="table">
   <tr>
-    <th>Subject</th>
-    <th>Object</th>
+    {% for col in cols %}
+    <th>{{ col | capitalize }}</th>
+    {% endfor %}
   </tr>
-  {% for row in predicates %}
+  {% for row in resources %}
   <tr>
     {% for e in row %}
-    <td>{{ e | safe }}</td>
+    <td>
+      {{ e | safe }}
+      {#
+      <button type="button" class="btn btn-default btn-xs">
+        <span class="glyphicon glyphicon-hand-right"></span>
+      </button>
+      #}
+    </td>
     {% endfor %}
   </tr>
   {% endfor %}
 </table>
-
-<h1>As object</h1>
-<table class="table">
-  <tr>
-    <th>Subject</th>
-    <th>Predicate</th>
-  </tr>
-  {% for row in objects %}
-  <tr>
-    {% for e in row %}
-    <td>{{ e | safe }}</td>
-    {% endfor %}
-  </tr>
-  {% endfor %}
-</table>
+{% endfor %}
 {% endblock %}
