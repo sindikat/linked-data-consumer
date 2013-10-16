@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, redirect
 from model import get_uri, get_graph
+from jinja import update_environment
 
 DEBUG = True
 HOST = "127.0.0.1"
 PORT = 17000
 
 app = Flask(__name__, static_url_path='')
+update_environment(app) # my custom Jinja2 filters
 
 @app.route('/')
 def index():

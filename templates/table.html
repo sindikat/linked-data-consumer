@@ -8,7 +8,12 @@
   <tr>
     {% for e in row %}
     <td>
+      {% if e[:4] == 'http' %}
+      <a href="{{ e | unquote }}">{{ e | safe }}</a>
+      {% else %}
       {{ e | safe }}
+      {% endif %}
+      &nbsp;<a href="/uri/{{ e }}"><span class="glyphicon glyphicon-hand-right" title="Query for this resource"></span></a>
     </td>
     {% endfor %}
   </tr>

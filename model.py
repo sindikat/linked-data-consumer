@@ -1,6 +1,6 @@
 from rdflib import Graph, ConjunctiveGraph, URIRef
 from posixpath import join
-from urllib import quote, unquote
+from helper import quote, unquote
 
 DATAPATH = 'data'
 HTTP = 'http://'
@@ -51,42 +51,36 @@ def get_graph(uri):
     graph = cg.get_context(uri)
     triples = graph.triples((None, None, None))
     # URIRef & Literal -> string
-    triples_pythonic = map(lambda triple: map(lambda resource: format_html(resource),
+    triples_pythonic = map(lambda triple: map(lambda resource: resource.toPython(),
                                          triple),
                            triples)
     return triples_pythonic
 
-def format_html(resource):
-    '''Accepts URIRef or Literal. Returns string.
+# def format_html(resource):
+#     '''Accepts URIRef or Literal. Returns string.
 
-    Prepares resource for an HTML representation.
-    '''
-    def htmlize(string, href=None):
-        '''Add HTML anchor tag'''
+#     Prepares resource for an HTML representation.
+#     '''
+#     def htmlize(string, href=None):
+#         '''Add HTML anchor tag'''
 
-        # by default href is equal to string
-        if not href:
-            href = string
+#         # by default href is equal to string
+#         if not href:
+#             href = string
 
-        # assume utf-8 encoding
-        if isinstance(href, unicode):
-            href = href.encode('utf-8')
+#         href = quote(href)
+#         result = '<a href="' + href + '">' + string + '</a>'
+#         return result
 
-        # replace octothorpe with URL encoding %23
-        href = quote(href, safe='/:')
+#     # URIRef to <a>, Literal to just string
+#     if isinstance(resource, URIRef):
+#         string = resource.toPython()
+#         url = HTTP + DOMAIN + '/uri/' + string
+#         resource_modified = htmlize(string, url)
+#     else:
+#         resource_modified = resource.toPython()
 
-        result = '<a href="' + href + '">' + string + '</a>'
-        return result
-
-    # URIRef to <a>, Literal to just string
-    if isinstance(resource, URIRef):
-        string = resource.toPython()
-        url = HTTP + DOMAIN + '/uri/' + string
-        resource_modified = htmlize(string, url)
-    else:
-        resource_modified = resource.toPython()
-
-    return resource_modified
+#     return resource_modified
 
 def sparql_query(graph, query):
     def result_to_xss(query_result):
@@ -97,8 +91,7 @@ def sparql_query(graph, query):
         for row in query_result:
             row_result = []
             for element in row:
-                element_modified = format_html(element)
-                row_result.append(element_modified)
+                row_result.append(element)
             result.append(row_result)
 
         return result
