@@ -1,19 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set cols = ['subject', 'predicate', 'object'] %}
+{% set rows = triples %}
+
 <h1>Named graph: <strong>{{ graph_name }}</strong></h1>
-<table class="table">
-  <tr>
-    <th>Subject</th>
-    <th>Predicate</th>
-    <th>Object</th>
-  </tr>
-  {% for row in triples %}
-  <tr>
-    <td>{{ row[0] | safe }}</td>
-    <td>{{ row[1] | safe }}</td>
-    <td>{{ row[2] | safe }}</td>
-  </tr>
-  {% endfor %}
-</table>
+
+{% include "table.html" %}
+
 {% endblock %}

@@ -1,57 +1,26 @@
 {% extends "base.html" %}
 
-{#
-{% block content %}
-<table class="table">
-{% for row in info %}
-<tr>
-{% for e in row %}
-<td>{{ e | safe }}</td>
-{% endfor %}
-</tr>
-{% endfor %}
-</table>
-{% endblock %}
-#}
-
 {% block content %}
 {# this variable could be generated using code, but i didn't find an elegant way #}
 {% set triple_template = [{'title': 'subject',
                            'cols': ['predicate', 'object'],
-                           'resources': subjects},
+                           'rows': subjects},
                           {'title': 'predicate',
                            'cols': ['subject', 'object'],
-                           'resources': predicates},
+                           'rows: predicates},
                           {'title': 'object',
                            'cols': ['subject', 'predicate'],
-                           'resources': objects}] %}
+                           'rows: objects}] %}
 
 <h1>URI: <strong>{{ uri }}</strong></h1>
 
 {% for triple_element in triple_template %}
 {% set cols = triple_element.cols %}
-{% set resources = triple_element.resources %}
-<h1>As {{ triple_element.title }}</h1>
-<table class="table">
-  <tr>
-    {% for col in cols %}
-    <th>{{ col | capitalize }}</th>
-    {% endfor %}
-  </tr>
-  {% for row in resources %}
-  <tr>
-    {% for e in row %}
-    <td>
-      {{ e | safe }}
-      {#
-      <button type="button" class="btn btn-default btn-xs">
-        <span class="glyphicon glyphicon-hand-right"></span>
-      </button>
-      #}
-    </td>
-    {% endfor %}
-  </tr>
-  {% endfor %}
-</table>
+{% set rows = triple_element.rows %}
+
+<h2>As {{ triple_element.title }}</h1>
+
+{% include "table.html" %}
+
 {% endfor %}
 {% endblock %}

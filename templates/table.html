@@ -1,0 +1,16 @@
+<table class="table">
+  <tr>
+    {% for col in cols %}
+    <th>{{ col | capitalize }}</th>
+    {% endfor %}
+  </tr>
+  {% for row in rows %}
+  <tr>
+    {% for e in row %}
+    <td>
+      {{ e | safe }}
+    </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
