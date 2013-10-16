@@ -39,9 +39,9 @@ def get_uri(uri):
     query_predicate = query_template_predicate.format(uri)
     query_object = query_template_object.format(uri)
 
-    subjects = sparql_query(cg, query_subject)
-    predicates = sparql_query(cg, query_predicate)
-    objects = sparql_query(cg, query_object)
+    subjects = cg.query(query_subject)
+    predicates = cg.query(query_predicate)
+    objects = cg.query(query_object)
 
     return (subjects, predicates, objects)
 
@@ -70,26 +70,6 @@ def get_graph(uri):
     #                        triples)
     triples_pythonic = triples
     return triples_pythonic
-
-def sparql_query(graph, query):
-    def result_to_xss(query_result):
-        '''convert rdflib.query.Result to list of lists'''
-        # there's also query_result.bindings
-        result = []
-
-        for row in query_result:
-            row_result = []
-            for element in row:
-                row_result.append(element)
-            result.append(row_result)
-
-        return result
-
-    result = graph.query(query)
-
-    final = result_to_xss(result)
-
-    return final
 
 def load_rdf(cg, uri):
     '''Accepts ConjunctiveGraph and URI (as string), returns None.

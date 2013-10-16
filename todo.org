@@ -64,3 +64,4 @@
 ** TODO [#C] Why HTML autoescaping in Jinja2 is on by default?
 ** TODO Concurrency
    Currently when you're trying to dereference a URI, you have to wait
+** TODO If there's no such named graph, dereference it
