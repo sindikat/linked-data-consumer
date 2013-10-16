@@ -32,7 +32,7 @@
 ** TODO Delete a named graph with all triples
 ** TODO Unify two named graphs
 ** TODO [#C] jQuery, Ajax, (possibly Backbone.js) - for in-place operation
-** TODO Refactor dirty =result_to_xss= function
+** DONE Refactor dirty =result_to_xss= function
 ** TODO Manually create and populate named graphs
 ** TODO [#A] Maintain versions of named graphs
    specifically, put timestamp of last population from outer source
@@ -64,4 +64,4 @@
 ** TODO [#C] Why HTML autoescaping in Jinja2 is on by default?
 ** TODO Concurrency
    Currently when you're trying to dereference a URI, you have to wait
-** TODO If there's no such named graph, dereference it
+** DONE If there's no such named graph, dereference it

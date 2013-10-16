@@ -63,13 +63,13 @@ def get_graph(uri):
     global cg
 
     graph = cg.get_context(uri)
+
+    # crude way to dereference URI of the graph, if it doesn't exist
+    if not len(graph):
+        load_rdf(cg, uri)
+
     triples = graph.triples((None, None, None))
-    # URIRef & Literal -> string
-    # triples_pythonic = map(lambda triple: map(lambda resource: resource.toPython(),
-    #                                      triple),
-    #                        triples)
-    triples_pythonic = triples
-    return triples_pythonic
+    return triples
 
 def load_rdf(cg, uri):
     '''Accepts ConjunctiveGraph and URI (as string), returns None.
