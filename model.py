@@ -65,9 +65,10 @@ def get_graph(uri):
     graph = cg.get_context(uri)
     triples = graph.triples((None, None, None))
     # URIRef & Literal -> string
-    triples_pythonic = map(lambda triple: map(lambda resource: resource.toPython(),
-                                         triple),
-                           triples)
+    # triples_pythonic = map(lambda triple: map(lambda resource: resource.toPython(),
+    #                                      triple),
+    #                        triples)
+    triples_pythonic = triples
     return triples_pythonic
 
 def sparql_query(graph, query):

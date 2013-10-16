@@ -6,10 +6,10 @@ def quote(string):
     '''
     # assume utf-8 encoding
     if isinstance(string, unicode):
-        encoded_string = string.encode('utf-8')
+        string = string.encode('utf-8')
 
     # example: # -> %23
-    quoted_string = urllib.quote(encoded_string, safe='/:')
+    quoted_string = urllib.quote(string, safe='/:')
 
     return quoted_string
 

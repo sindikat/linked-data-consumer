@@ -9,11 +9,11 @@
     {% for e in row %}
     <td>
       {% if e[:4] == 'http' %}
-      <a href="{{ e | unquote }}">{{ e | safe }}</a>
+      <a href="{{ e }}">{{ e }}</a>
       {% else %}
-      {{ e | safe }}
+      {{ e }}
       {% endif %}
-      &nbsp;<a href="/uri/{{ e }}"><span class="glyphicon glyphicon-hand-right" title="Query for this resource"></span></a>
+      &nbsp;<a href="/uri/{{ e | quote }}"><span class="glyphicon glyphicon-hand-right" title="Query for this resource"></span></a>
     </td>
     {% endfor %}
   </tr>

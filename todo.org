@@ -18,7 +18,7 @@
 ** DONE [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
 ** TODO [#A] Only HTTP URIs should be dereferenced, not mailto: or tel:
    But maybe there should be a possibility to query KB for all mentions of the particular mailto:, tel: or a Literal
-** TODO [#A] Go to the URL directly
+** DONE [#A] Go to the URL directly
    In addition to just dereferencing it inside my web-service
 ** TODO Manually add a triple (no Ajax at this point)
 ** TODO Try non-existent URL
@@ -62,3 +62,5 @@
 
    Maybe, this question is irrelevant, because i'll move from Jinja2 to AngularJS.
 ** TODO [#C] Why HTML autoescaping in Jinja2 is on by default?
+** TODO Concurrency
+   Currently when you're trying to dereference a URI, you have to wait
