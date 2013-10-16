@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% set cols = ['subject', 'predicate'] %}
+<h1>Literal: <strong>{{ uri }}</strong></h1>
+{% include "table.html" %}
+{% endblock %}

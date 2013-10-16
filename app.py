@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from model import get_uri, get_graph
+from model import get_uri, get_literal, get_graph
 from jinja import update_environment
 
 DEBUG = True
@@ -23,6 +23,13 @@ def resource(uri):
                            subjects=subjects,
                            predicates=predicates,
                            objects=objects)
+
+@app.route('/literal/<path:uri>')
+def literal(uri):
+    triples = get_literal(uri)
+    return render_template('literal.html',
+                           uri=uri,
+                           rows=triples)
 
 @app.route('/graph/<path:uri>')
 def graph(uri):

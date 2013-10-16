@@ -45,6 +45,20 @@ def get_uri(uri):
 
     return (subjects, predicates, objects)
 
+def get_literal(literal):
+    '''Get all triples associated with this literal using a SPARQL query'''
+    global cg
+
+    query_template = '''select ?s ?p
+    where {{
+    ?s ?p "{0}" .
+    }}
+    '''
+    query = query_template.format(literal)
+    triples = sparql_query(cg, query)
+
+    return triples
+
 def get_graph(uri):
     global cg
 
@@ -55,32 +69,6 @@ def get_graph(uri):
                                          triple),
                            triples)
     return triples_pythonic
-
-# def format_html(resource):
-#     '''Accepts URIRef or Literal. Returns string.
-
-#     Prepares resource for an HTML representation.
-#     '''
-#     def htmlize(string, href=None):
-#         '''Add HTML anchor tag'''
-
-#         # by default href is equal to string
-#         if not href:
-#             href = string
-
-#         href = quote(href)
-#         result = '<a href="' + href + '">' + string + '</a>'
-#         return result
-
-#     # URIRef to <a>, Literal to just string
-#     if isinstance(resource, URIRef):
-#         string = resource.toPython()
-#         url = HTTP + DOMAIN + '/uri/' + string
-#         resource_modified = htmlize(string, url)
-#     else:
-#         resource_modified = resource.toPython()
-
-#     return resource_modified
 
 def sparql_query(graph, query):
     def result_to_xss(query_result):
