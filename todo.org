@@ -55,3 +55,10 @@
    for parsing Microdata
 ** TODO Possibly use requests library
    Instead of relying on "smart" Graph.parse(), which doesn't allow timeouts for example
+** TODO [#C] Think: shouldn't `format_html` be implemented on Jinja side, not on Flask's?
+   It's HTML generation after. But even currently there's much logic involved. For example it compares type with URIRef and Literal and generates HTML according to that. Moving this to Jinja would require adding custom Jinja filters.
+
+   In future there would be even more logic: seeing whether the URI starts with `http://` or with `mailto://`, what kind of URI it is and so on.
+
+   Maybe, this question is irrelevant, because i'll move from Jinja2 to AngularJS.
+** TODO [#C] Why HTML autoescaping in Jinja2 is on by default?
