@@ -16,11 +16,13 @@
 ** DONE [#A] Move from Graph to ConjunctiveGraph
 ** DONE [#A] Use persistence (Sleepycat)
 ** DONE [#A] When loading RDF from outer sources, put them in a Named Graph, instead of lumping them together
-** TODO [#A] Only HTTP URIs should be dereferenced, not mailto: or tel:
-   But maybe there should be a possibility to query KB for all mentions of the particular mailto:, tel: or a Literal
+** TODO [#A] Only HTTP URIs should be dereferenced
+   Currently, however, we treat mailto: and tel: as literals, which is hugely incorrect. Maybe, the data given from Flask to Jinja should be hugely smart. Or maybe i should use AngularJS.
+
 ** DONE [#A] Go to the URL directly
    In addition to just dereferencing it inside my web-service
 ** TODO Manually add a triple (no Ajax at this point)
+   Currently unfinished
 ** TODO Try non-existent URL
    I tried http://localhost:17000/uri/http://ex.org/a#b. I got up with:
 
@@ -29,7 +31,7 @@
 | http://www.w3.org/ns/md#item | http://www.w3.org/1999/02/22-rdf-syntax-ns#nil |
 ** TODO Edit a triple
 ** TODO Delete a triple
-** TODO Delete a named graph with all triples
+** DONE Delete a named graph with all triples
 ** TODO Unify two named graphs
 ** TODO [#C] jQuery, Ajax, (possibly Backbone.js) - for in-place operation
 ** DONE Refactor dirty =result_to_xss= function
@@ -65,3 +67,7 @@
 ** TODO Concurrency
    Currently when you're trying to dereference a URI, you have to wait
 ** DONE If there's no such named graph, dereference it
+** TODO RESTful
+   example: /remove_graph/<uri> -> /<uri> with DELETE method
+** TODO Integrate VoiD or DaDy
+   Or some other named graph related vocabulary

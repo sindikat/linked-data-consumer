@@ -55,7 +55,7 @@ def get_literal(literal):
     }}
     '''
     query = query_template.format(literal)
-    triples = sparql_query(cg, query)
+    triples = cg.query(query)
 
     return triples
 
@@ -70,6 +70,13 @@ def get_graph(uri):
 
     triples = graph.triples((None, None, None))
     return triples
+
+def remove_graph(uri):
+    global cg
+
+    cg.remove_context(uri)
+
+    return None
 
 def load_rdf(cg, uri):
     '''Accepts ConjunctiveGraph and URI (as string), returns None.

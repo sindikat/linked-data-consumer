@@ -4,7 +4,10 @@
 {% set cols = ['subject', 'predicate', 'object'] %}
 {% set rows = triples %}
 
-<h1>Named graph: <strong>{{ graph_name }}</strong></h1>
+<h1>Named graph: <strong>{{ graph_name }}</strong>&nbsp;
+  <a href="/remove_graph/{{ graph_name | quote }}"><span class="glyphicon glyphicon-remove" title="Remove this named graph"></span></a>
+  <a href="/add_triple/{{ graph_name | quote }}"><span class="glyphicon glyphicon-plus" title="Add a triple to this graph"></span></a>
+</h1>
 
 {% include "table.html" %}
 
