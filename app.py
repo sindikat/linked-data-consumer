@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from model import get_uri, get_literal, get_graph, remove_graph
+from model import get_uri, get_literal, get_graph, remove_graph, find_sameas
 from jinja import update_environment
 
 DEBUG = True
@@ -44,10 +44,15 @@ def graph_remove(uri):
     return redirect('/')
 
 @app.route('/add_triple/<path:uri>')
-def triple_add(uri)):
+def triple_add(uri):
     '''Add a triple to a named graph'''
     return render_template('add_triple.html',
                            graph_name=uri)
+
+@app.route('/sameas/<path:uri>')
+def sameas(uri):
+    find_sameas(uri)
+    return redirect('/uri/' + uri)
 
 if __name__ == '__main__':
     app.run(debug=DEBUG, port=PORT, host=HOST)

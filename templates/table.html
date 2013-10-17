@@ -9,11 +9,12 @@
     {% for e in row %}
     <td>
       {% if e[:4] == 'http' %}
-      <a href="{{ e }}">{{ e }}</a>
+      <a href="{{ e }}">{{ e | unquote }}</a>
       {% else %}
       {{ e }}
       {% endif %}
       &nbsp;<a href="/{{ 'uri' if e[:4] == 'http' else 'literal' }}/{{ e | quote }}"><span class="glyphicon glyphicon-hand-right" title="Query for this resource"></span></a>
+      {% if e[:4] == 'http' %}<a href="/sameas/{{ e | quote }}"><span class="glyphicon glyphicon-resize-horizontal" title="Find more triples through owl:sameAs"></span></a>{% endif %}
     </td>
     {% endfor %}
   </tr>

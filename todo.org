@@ -34,11 +34,9 @@
 ** DONE Delete a named graph with all triples
 ** TODO Unify two named graphs
 ** TODO [#C] jQuery, Ajax, (possibly Backbone.js) - for in-place operation
-** DONE Refactor dirty =result_to_xss= function
 ** TODO Manually create and populate named graphs
 ** TODO [#A] Maintain versions of named graphs
    specifically, put timestamp of last population from outer source
-** TODO Gather data through RDFa
 ** TODO Gather data through SPARQL endpoints (maintain list of SPARQL endpoints?)
 ** TODO SPARQL endpoint
 ** TODO SPARUL endpoint
@@ -71,3 +69,4 @@
    example: /remove_graph/<uri> -> /<uri> with DELETE method
 ** TODO Integrate VoiD or DaDy
    Or some other named graph related vocabulary
+** TODO Deal with lack of parser for text/plain

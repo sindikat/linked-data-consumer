@@ -1,13 +1,12 @@
-from rdflib import Graph, ConjunctiveGraph, URIRef
+from rdflib import Graph, ConjunctiveGraph, URIRef, Namespace
 from posixpath import join
 from helper import quote, unquote
 
 DATAPATH = 'data'
 HTTP = 'http://'
-# DOMAIN = 'abstractnonsense.net'
-DOMAIN = 'localhost:17000'
+DOMAIN = 'abstractnonsense.net'
 STORE = 'Sleepycat'
-# NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
+NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
 
 cg = ConjunctiveGraph(store=STORE)
 cg.open(DATAPATH, create=False) # it stays open all the time, just commits are made
@@ -75,6 +74,30 @@ def remove_graph(uri):
     global cg
 
     cg.remove_context(uri)
+
+    return None
+
+def find_sameas(uri):
+    global cg
+
+    sameas_address_template = 'http://sameas.org/?uri={0}'
+    sameas_address = sameas_address_template.format(uri)
+    graph_name = join('sameas', uri)
+    g = cg.get_context(NAMESPACE[graph_name])
+    g.parse(sameas_address)
+
+    query_template = '''select ?o where {{ <{0}> owl:sameAs ?o . }}'''
+    query = query_template.format(uri)
+    objects = map(lambda row: list(row)[0], g.query(query))
+
+    # now dereference every URI
+    for new_uri in objects:
+        new_graph = cg.get_context(new_uri)
+        try:
+            new_graph.parse(new_uri)
+        except Exception, e:
+            # PluginException: No plugin registered for (text/plain, <class 'rdflib.parser.Parser'>)
+            print e
 
     return None
 
