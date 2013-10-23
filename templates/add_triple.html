@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+You are adding a triple to a named graph <a href="/graph/{{ graph_name | quote }}">{{ graph_name }}</a>.
+<div class="input-group">
+  <form action="/add_triple/{{ graph_name | quote }}" method="post">
+    <span class="input-group-addon">Subject</span><input name="subject" type="text" class="form-control" />
+    <span class="input-group-addon">Predicate</span><input name="predicate" type="text" class="form-control" />
+    <span class="input-group-addon">Object</span><input name="object" type="text" class="form-control" />
+    <input type="submit" class="form-control" />
+  </form>
+</div>
+{% endblock %}
