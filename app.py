@@ -49,10 +49,5 @@ def triple_add(uri):
     return render_template('add_triple.html',
                            graph_name=uri)
 
-# @app.route('/sameas/<path:uri>')
-# def sameas(uri):
-#     find_sameas(uri)
-#     return redirect('/uri/' + uri)
-
 if __name__ == '__main__':
     app.run(debug=DEBUG, port=PORT, host=HOST)

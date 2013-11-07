@@ -19,30 +19,26 @@ def get_uri(uri):
     cg.open(DATAPATH, create=False)
 
     # Check URL for existence
-    if url_exists(uri, timeout=1):
+    if url_exists(uri, timeout=0.1):
         get_data(uri, ds)
 
     triple_table = query_union(cg, uri)
-    # print cg.query('select ?p where { <http://google.com> ?p ?o . }')[0]
     return triple_table
 
 def get_data(uri, dataset):
     coreferences_graph = find_coreferences(uri)
-    canonical_uri = get_canonical_uri(coreferences_graph)
     coreferences = list_coreferences(coreferences_graph)
-    graphs = dereference(dataset, coreferences) # contains data from coreferences
-    final_graph = replace_uris(canonical_uri, graphs)
-    print canonical_uri
-    print list(ds.contexts())
-    dataset.remove_graph(canonical_uri) # remove previous named graph
-    dataset.add_graph(final_graph)
+    update_system_graph(coreferences_graph, dataset) # RDFS and OWL statements go here
+    graphs = [dereference(coreference) for coreference in coreferences]
+    for graph in graphs:
+        dataset.add_graph(graph)
     return None
 
 def find_coreferences(uri):
     '''Accepts URI. Goes to sameas.org, gets triples in the form
     <subject> owl:sameAs <object>, populates a graph with them.
 
-    Returns Graph.
+    Returns List.
     '''
     quoted_uri = quote(uri)
     sameas_address_template = 'http://sameas.org/?uri={0}'
@@ -55,85 +51,84 @@ def find_coreferences(uri):
     return coreferences_graph
 
 def list_coreferences(graph):
-    '''Returns a list of URIs that have an owl:sameAs relationship'''
-    query = 'select ?o where {{ ?s owl:sameAs ?o . }}'
+    query = 'select ?o where { ?s owl:sameAs ?o . }'
     result = graph.query(query)
     coreferences = [row[0] for row in result]
     return coreferences
 
-def dereference(dataset, coreferences):
-    '''Accepts a Dataset and a list of URIs.
+def update_system_graph(graph, dataset):
+    default_graph_name = 'urn:x-rdflib:default'
+    system_graph = dataset.get_context(default_graph_name)
+    system_graph += graph
+    return None
 
-    Creates many named graphs
-    after URIs and populates them with data gathered thru
-    dereference.
-    '''
-    graphs = []
-    # now dereference every URI
-    for uri in coreferences:
-        print 'uri', uri
-        new_graph = Graph(identifier=uri)
-        try:
-            new_graph.parse(uri)
-        except Exception, e:
-            # PluginException: No plugin registered for (text/plain,
-            # <class 'rdflib.parser.Parser'>)
-            print e
-        graphs.append(new_graph)
-    return graphs
-
-def get_canonical_uri(graph):
-    query = 'select ?canonical where { ?canonical owl:sameAs ?object } limit 1'
-    result = graph.query(query)
-    canonical_uri = result.bindings[0]['canonical']
-    return canonical_uri
-
-def replace_uris(canonical_uri, source_graphs):
-    canonical_graph = Graph(identifier=canonical_uri)
-    query_template = '''construct {{ <{0}> ?p ?o . ?s <{0}> ?o . ?s ?p <{0}> . }}
-    where {{
-    optional {{
-    <{1}> ?p ?o .
-    }}
-    optional {{
-    ?s <{1}> ?o .
-    }}
-    optional {{
-    ?s ?p <{1}> .
-    }}
-    }}
-    '''
-    for graph in source_graphs:
-        query = query_template.format(canonical_uri, graph.identifier)
-        result = graph.query(query)
-        for triple in result: # add to canonical
-            canonical_graph.add(triple)
-    return canonical_graph
+def dereference(uri):
+    '''Parse data from `uri`, return triples in form of named graph'''
+    graph = Graph(identifier=uri)
+    try:
+        graph.parse(uri)
+        if uri == 'http://dbpedia.org/ontology/Person':
+            print 'LOL!', [s for s, p, o in graph]
+    except Exception, e:
+        # PluginException: No plugin registered for (text/plain,
+        # <class 'rdflib.parser.Parser'>)
+        print e
+    return graph
 
 def query_union(cg, uri):
     '''Query union of graphs to get all triples, where URI is used.
 
     Returns a 3-tuple of lists.
     '''
+    # query_template_subject = '''select ?p ?o
+    # where {{
+    # <{0}> ?p ?o .
+    # }}
+    # '''
+    # query_template_predicate = '''select ?s ?o
+    # where {{
+    # ?s <{0}> ?o .
+    # }}
+    # '''
+    # query_template_object = '''select ?s ?p
+    # where {{
+    # ?s ?p <{0}> .
+    # }}
+    # '''
     query_template_subject = '''select ?p ?o
     where {{
-    <{0}> ?p ?o .
+    {{ <{0}> ?p ?o . }} union
+    {{ ?synonym ?p ?o .
+       {{ ?synonym owl:sameAs+ <{0}> . }} union
+       {{ <{0}> owl:sameAs+ ?synonym . }}
+    }}
     }}
     '''
     query_template_predicate = '''select ?s ?o
     where {{
-    ?s <{0}> ?o .
+    {{ ?s <{0}> ?o . }} union
+    {{ ?s ?synonym ?o .
+       {{ ?synonym owl:sameAs+ <{0}> . }} union
+       {{ <{0}> owl:sameAs+ ?synonym . }}
+    }}
     }}
     '''
     query_template_object = '''select ?s ?p
     where {{
-    ?s ?p <{0}> .
+    {{ ?s ?p <{0}> . }} union
+    {{ ?s ?p ?synonym .
+       {{ ?synonym owl:sameAs+ <{0}> . }} union
+       {{ <{0}> owl:sameAs+ ?synonym . }}
+    }}
     }}
     '''
 
     query_subject = query_template_subject.format(uri)
     query_predicate = query_template_predicate.format(uri)
     query_object = query_template_object.format(uri)
+
+    # OWL namespace understood by default
+    cg.namespace_manager.bind('owl', 'http://www.w3.org/2002/07/owl#')
 
     subjects = cg.query(query_subject)
     predicates = cg.query(query_predicate)
@@ -158,7 +153,7 @@ def get_literal(literal):
 def get_graph(uri):
     global ds
 
-    graph = ds.graph(uri)
+    graph = ds.get_context(uri)
 
     # crude way to dereference URI of the graph, if it doesn't exist
     if not len(graph):
@@ -172,55 +167,4 @@ def remove_graph(uri):
 
     ds.remove_context(uri)
 
-    return None
-
-# def find_sameas(uri):
-#     def get_canonical_uri(graph):
-#         variable = 'canonical'
-#         query_template = 'select ?{0} where {{ ?{0} owl:sameAs ?object }} limit 1'
-#         query = query_template.format(variable)
-#         result = g.query(query)
-#         canonical_uri = result.bindings[0][variable]
-#         return canonical_uri
-
-#     global ds
-
-#     sameas_address_template = 'http://sameas.org/?uri={0}'
-#     sameas_address = sameas_address_template.format(uri)
-#     graph_name = join('sameas', uri)
-#     g = ds.get_context(NAMESPACE[graph_name])
-#     g.parse(sameas_address)
-
-#     canonical_uri = get_canonical_uri(g)
-
-#     query_template = '''select ?o where {{ <{0}> owl:sameAs ?o . }}'''
-#     query = query_template.format(canonical_uri)
-#     objects = map(lambda row: list(row)[0], g.query(query))
-
-#     # now dereference every URI
-#     for new_uri in objects:
-#         new_graph = ds.get_context(new_uri)
-#         try:
-#             new_graph.parse(new_uri)
-#         except Exception, e:
-#             # PluginException: No plugin registered for (text/plain, <class 'rdflib.parser.Parser'>)
-#             print e
-
-#     # now add all data to canonical graph
-
-#     return None
-
-def load_rdf(ds, uri):
-    '''Accepts Dataset and URI (as string), returns None.
-
-    SIDE EFFECTS
-    '''
-    uri_unquoted = unquote(uri)
-    graph_identifier = URIRef(uri_unquoted)
-    new_graph = ds.graph(graph_identifier)
-    try:
-        new_graph.parse(uri)
-    except Exception, e:
-        print e, type(e)
-        pass
     return None
