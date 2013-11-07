@@ -11,6 +11,10 @@ NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
 ds = Dataset(store=STORE)
 ds.open(DATAPATH, create=False) # it stays open all the time, just commits are made
 
+# DBPedia workaround
+from rdflib.plugin import register, Parser
+register('text/rdf+n3', Parser, 'rdflib.plugins.parsers.notation3', 'N3Parser')
+
 def get_uri(uri):
     global ds # dirty
 
@@ -29,9 +33,11 @@ def get_data(uri, dataset):
     coreferences_graph = find_coreferences(uri)
     coreferences = list_coreferences(coreferences_graph)
     update_system_graph(coreferences_graph, dataset) # RDFS and OWL statements go here
-    graphs = [dereference(coreference) for coreference in coreferences]
+    graphs = [dereference(coreference, dataset) for coreference in coreferences]
     for graph in graphs:
-        dataset.add_graph(graph)
+        # without this if the graphs with same id are repeated
+        if graph not in dataset.contexts():
+            dataset.add_graph(graph)
     return None
 
 def find_coreferences(uri):
@@ -62,13 +68,11 @@ def update_system_graph(graph, dataset):
     system_graph += graph
     return None
 
-def dereference(uri):
+def dereference(uri, dataset):
     '''Parse data from `uri`, return triples in form of named graph'''
-    graph = Graph(identifier=uri)
+    graph = dataset.graph(identifier=uri)
     try:
         graph.parse(uri)
-        if uri == 'http://dbpedia.org/ontology/Person':
-            print 'LOL!', [s for s, p, o in graph]
     except Exception, e:
         # PluginException: No plugin registered for (text/plain,
         # <class 'rdflib.parser.Parser'>)
@@ -95,30 +99,30 @@ def query_union(cg, uri):
     # ?s ?p <{0}> .
     # }}
     # '''
-    query_template_subject = '''select ?p ?o
+    query_template_subject = '''select distinct ?p ?o
     where {{
     {{ <{0}> ?p ?o . }} union
     {{ ?synonym ?p ?o .
-       {{ ?synonym owl:sameAs+ <{0}> . }} union
-       {{ <{0}> owl:sameAs+ ?synonym . }}
+       {{ ?synonym owl:sameAs* <{0}> . }} union
+       {{ <{0}> owl:sameAs* ?synonym . }}
     }}
     }}
     '''
-    query_template_predicate = '''select ?s ?o
+    query_template_predicate = '''select distinct ?s ?o
     where {{
     {{ ?s <{0}> ?o . }} union
     {{ ?s ?synonym ?o .
-       {{ ?synonym owl:sameAs+ <{0}> . }} union
-       {{ <{0}> owl:sameAs+ ?synonym . }}
+       {{ ?synonym owl:sameAs* <{0}> . }} union
+       {{ <{0}> owl:sameAs* ?synonym . }}
     }}
     }}
     '''
-    query_template_object = '''select ?s ?p
+    query_template_object = '''select distinct ?s ?p
     where {{
     {{ ?s ?p <{0}> . }} union
     {{ ?s ?p ?synonym .
-       {{ ?synonym owl:sameAs+ <{0}> . }} union
-       {{ <{0}> owl:sameAs+ ?synonym . }}
+       {{ ?synonym owl:sameAs* <{0}> . }} union
+       {{ <{0}> owl:sameAs* ?synonym . }}
     }}
     }}
     '''
@@ -128,7 +132,7 @@ def query_union(cg, uri):
     query_object = query_template_object.format(uri)
 
     # OWL namespace understood by default
-    cg.namespace_manager.bind('owl', 'http://www.w3.org/2002/07/owl#')
+    cg.bind('owl', 'http://www.w3.org/2002/07/owl#')
 
     subjects = cg.query(query_subject)
     predicates = cg.query(query_predicate)
