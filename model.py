@@ -1,5 +1,7 @@
-from rdflib import Graph, ConjunctiveGraph, Dataset, URIRef, Namespace
+from rdflib import Graph, ConjunctiveGraph, Dataset, URIRef, Namespace, Literal
 from posixpath import join
+from uuid import uuid4
+from datetime import datetime
 from helper import quote, unquote, url_exists
 
 DATAPATH = 'data'
@@ -10,10 +12,25 @@ NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
 
 ds = Dataset(store=STORE)
 ds.open(DATAPATH, create=False) # it stays open all the time, just commits are made
+ds.bind('abs', NAMESPACE) # namespace for my URIs
 
 # DBPedia workaround
 from rdflib.plugin import register, Parser
 register('text/rdf+n3', Parser, 'rdflib.plugins.parsers.notation3', 'N3Parser')
+
+def start():
+    # initialization of Dataset and ConjunctiveGraph
+    global ds # dirty
+    ds.commit()
+    cg = ConjunctiveGraph(store=STORE)
+    cg.open(DATAPATH, create=False)
+
+    # get all URIs and try to dereference them
+    uris = {x for x in cg.all_nodes() if isinstance(x, URIRef)}
+
+    print uris
+
+    return join(HTTP, DOMAIN, 'i')
 
 def get_uri(uri):
     global ds # dirty
@@ -22,9 +39,7 @@ def get_uri(uri):
     cg = ConjunctiveGraph(store=STORE)
     cg.open(DATAPATH, create=False)
 
-    # Check URL for existence
-    if url_exists(uri, timeout=0.1):
-        get_data(uri, ds)
+    get_data(uri, ds)
 
     triple_table = query_union(cg, uri)
     return triple_table
@@ -70,14 +85,79 @@ def update_system_graph(graph, dataset):
 
 def dereference(uri, dataset):
     '''Parse data from `uri`, return triples in form of named graph'''
-    graph = dataset.graph(identifier=uri)
-    try:
-        graph.parse(uri)
-    except Exception, e:
-        # PluginException: No plugin registered for (text/plain,
-        # <class 'rdflib.parser.Parser'>)
-        print e
+    graph_name = find_named_graph(uri, dataset)
+    if graph_name:
+        identifier = graph_name
+    else:
+        identifier = NAMESPACE[join('graph', uuid4().hex)]
+        update_metagraph(identifier, uri, dataset)
+
+    # TODO: check that the graph is properly removed
+    graph = dataset.graph(identifier=identifier)
+
+    # Check if URI was dereferenced > 1 day ago
+    if check_timestamp(dataset, uri) and url_exists(uri, timeout=2):
+        # remove the old graph
+        dataset.remove_graph(identifier)
+        graph = dataset.graph(identifier=identifier)
+        try:
+            graph.parse(uri)
+        except Exception, e:
+            # PluginException: No plugin registered for (text/plain,
+            # <class 'rdflib.parser.Parser'>)
+            print e
+
     return graph
+
+def find_named_graph(uri, dataset):
+    '''I have a system graph called abs:metagraph. It is a special graph
+    that contains metadata about other named graphs.
+    '''
+    metagraph_id = NAMESPACE.metagraph
+    metagraph = dataset.graph(metagraph_id)
+    query_template = 'select ?graph where {{ ?graph abs:uri <{0}> }}'
+    query = query_template.format(uri)
+    result = metagraph.query(query)
+    if result:
+        return result.bindings[0]['graph']
+    else:
+        return None
+
+def update_metagraph(identifier, uri, dataset):
+    identifier = URIRef(identifier)
+    uri = URIRef(uri)
+
+    # special properties, related to named graphs
+    p_uri = NAMESPACE.uri
+    p_date = NAMESPACE.last_downloaded
+
+    date = Literal(datetime.now())
+
+    metagraph_id = NAMESPACE.metagraph
+    metagraph = dataset.graph(metagraph_id)
+    triple_name = (identifier, p_uri, uri)
+    metagraph.remove((uri, p_date, None)) # remove old timestamp
+    triple_date = (uri, p_date, date)
+    metagraph.add(triple_name)
+    metagraph.add(triple_date)
+    return None
+
+def check_timestamp(dataset, uri):
+    '''Checks the timestamp of the named graph'''
+    metagraph_id = NAMESPACE.metagraph
+    metagraph = dataset.graph(metagraph_id)
+
+    query_template = 'select ?date where {{ <{0}> abs:last_downloaded ?date . }}'
+    query = query_template.format(uri)
+
+    result = metagraph.query(query)
+    date = result.bindings[0]['date'].toPython()
+
+    timedelta = datetime.now() - date
+    if timedelta.days >= 1:
+        return True
+    else:
+        return False
 
 def query_union(cg, uri):
     '''Query union of graphs to get all triples, where URI is used.

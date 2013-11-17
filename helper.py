@@ -20,7 +20,7 @@ def unquote(string):
 def url_exists(url, timeout=None):
     '''Returns True if status code is 200, 301, 302, 303'''
     try:
-        r = requests.head(url, timeout=None)
+        r = requests.head(url, timeout=timeout)
     except Exception:
         return False
     return r.status_code in (200, 301, 302, 303)

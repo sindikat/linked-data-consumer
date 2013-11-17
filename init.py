@@ -1,12 +1,15 @@
 '''This script initializes data file, that contains triples'''
 
-from rdflib import Graph, ConjunctiveGraph
+from rdflib import Graph, Dataset
 from shutil import rmtree
 from os.path import exists
+from model import update_metagraph
 
 DATAPATH = 'data'
 DOMAIN = 'http://abstractnonsense.net/'
-DEFAULT_GRAPH = DOMAIN + 'i'
+GRAPH_NAMESPACE = DOMAIN + 'graph' + '/'
+DEFAULT_URI = DOMAIN + 'i'
+DEFAULT_GRAPH = GRAPH_NAMESPACE + 'i'
 
 def remove_data(datapath):
     '''SIDE EFFECTS'''
@@ -14,9 +17,12 @@ def remove_data(datapath):
         rmtree(datapath)
     return None
 
-cg = ConjunctiveGraph(store='Sleepycat')
+ds = Dataset(store='Sleepycat')
 remove_data(DATAPATH)
-cg.open('data', create=True)
-g = cg.get_context(identifier=DEFAULT_GRAPH)
+ds.open('data', create=True)
+g = ds.get_context(identifier=DEFAULT_GRAPH)
 g.parse('foaf.ttl', format='n3')
-cg.close()
+
+update_metagraph(DEFAULT_GRAPH, DEFAULT_URI, ds)
+
+ds.close()
