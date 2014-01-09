@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from model import start, get_uri, get_literal, get_graph, remove_graph
+from model import start, get_uri, get_literal, get_graph, remove_graph, original
 from jinja import update_environment
 
 DEBUG = True
@@ -13,11 +13,20 @@ update_environment(app) # my custom Jinja2 filters
 def index():
     return render_template('index.html')
 
+@app.route('/original')
+def route_original():
+    triples = original()
+    return render_template('graph.html',
+                           graph_name='Original FOAF file',
+                           triples=triples)
+
 @app.route('/start')
 def route_start():
-    result_uri = start()
-    result_redirect = 'uri/' + result_uri
-    return redirect(result_redirect)
+    quads = start()
+    # result_redirect = 'uri/' + result_uri
+    return render_template('final.html',
+                           header='Result',
+                           quads=quads)
 
 # '/<path:uri>' doesn't work because of static_url_path, think
 @app.route('/uri/<path:uri>')

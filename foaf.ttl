@@ -20,14 +20,16 @@ ns:i
     foaf:familyName "Irkegulov" ;
     foaf:givenName "Mirzhan" ;
     foaf:homepage <http://abstractnonsense.net> ;
-    foaf:mbox_sha1sum "47dcda4413c88cf9d3595f7e86774c7da9bc6692" ;
+#    foaf:mbox_sha1sum "47dcda4413c88cf9d3595f7e86774c7da9bc6692" ;
     foaf:name "Mirzhan Irkegulov" ;
-    foaf:nick "sindikat" ;
-    foaf:account <http://www.reddit.com/user/sindikat/> ;
+#    foaf:nick "sindikat" ;
+#    foaf:account <http://www.reddit.com/user/sindikat/> ;
     foaf:based_near <http://dbpedia.org/resource/Almaty> ;
     foaf:gender "male" ;
     foaf:interest <http://dbpedia.org/resource/Functional_programming> ,
                   <http://dbpedia.org/resource/Discrete_mathematics> ;
-    foaf:jabberID "sindikat@jabber.so36.net" ;
-    foaf:myersBriggs "INTP" ;
-    foaf:openid <http://launchpad.net/~sindikat> .
+#    foaf:jabberID "sindikat@jabber.so36.net" ;
+#    foaf:myersBriggs "INTP" ;
+#    foaf:openid <http://launchpad.net/~sindikat> ;
+    foaf:knows <http://wifo5-03.informatik.uni-mannheim.de/bizer/foaf.rdf>,
+               <http://www.openlinksw.com/dataspace/person/kidehen@openlinksw.com#this> .

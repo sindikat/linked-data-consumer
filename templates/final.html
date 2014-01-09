@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% set cols = ['subject', 'predicate', 'object', 'context'] %}
+{% set rows = quads %}
+
+<h1>{{ header }}</h1>
+{% include "table.html" %}
+{% endblock %}

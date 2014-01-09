@@ -12,27 +12,78 @@ NAMESPACE = Namespace(join(HTTP, DOMAIN, ''))
 
 ds = Dataset(store=STORE)
 ds.open(DATAPATH, create=False) # it stays open all the time, just commits are made
-ds.bind('abs', NAMESPACE) # namespace for my URIs
+
+cg = ConjunctiveGraph(store=STORE)
+cg.open(DATAPATH, create=False)
+# cg.bind('foaf', 'http://xmlns.com/foaf/0.1/') # FOAF namespace understood
 
 # DBPedia workaround
 from rdflib.plugin import register, Parser
 register('text/rdf+n3', Parser, 'rdflib.plugins.parsers.notation3', 'N3Parser')
 
 def start():
+    '''This starts the background script.
+
+    The background script uses a (currently) hardcoded pattern,
+    according to which the script harvests data.
+
+    It recursively gathers more and more data, but only to a finite
+    depth.
+
+    Return the triples in the form of list of 3-tuples.
+
+    '''
     # initialization of Dataset and ConjunctiveGraph
-    global ds # dirty
+    global ds, cg # dirty
+    ds.bind('abs', NAMESPACE) # namespace for my URIs
     ds.commit()
-    cg = ConjunctiveGraph(store=STORE)
-    cg.open(DATAPATH, create=False)
 
-    # get all URIs and try to dereference them
-    uris = {x for x in cg.all_nodes() if isinstance(x, URIRef)}
+    # recursively harvest data
+    recur(cg, depth=1)
 
-    print uris
+    # return all triples
+    wildcard = (None, None, None)
+    # triples = cg.triples(wildcard)
+    quads = cg.quads(wildcard)
+    quads = map(lambda (s, p, o, c): (s, p, o, c.identifier), quads)
+    # subjects, predicates, objects = zip(*triples)
 
-    return join(HTTP, DOMAIN, 'i')
+    return quads
+
+def recur(cg, depth):
+    '''Recursive function for harvesting data.
+
+    It harvests data by dereferencing. It continues to dereference
+    URIs, until depth is 0.
+
+    Breadth-first search.
+    '''
+    if depth == 0:
+        return None
+    else:
+        # get URIs to dereference
+        # TODO: change <http://xmlns.com/foaf/0.1/knows> to foaf:knows
+        where_clause = '''
+        ?x1 <http://xmlns.com/foaf/0.1/knows> ?x2 .
+        ?x3 a <http://xmlns.com/foaf/0.1/Person> .
+        '''
+        query_template = 'select * where {{ {0} }}'
+        query = query_template.format(where_clause)
+        result = cg.query(query)
+        uris = {x for row in result for x in row}
+        print uris
+        for uri in uris:
+            dereference(uri, ds)
+            # get_uri(uri)
+        return recur(cg, depth-1)
 
 def get_uri(uri):
+    '''Returns all triples relevant to the URI.
+
+    In other words, those, which have URI as a Resource.
+
+    If there is no data in the triplestore, tries to harvest data.
+    '''
     global ds # dirty
 
     ds.commit()
@@ -45,9 +96,12 @@ def get_uri(uri):
     return triple_table
 
 def get_data(uri, dataset):
+    '''Finds corefererences, tries to dereference them, creates a named
+    graph for each URI.
+    '''
     coreferences_graph = find_coreferences(uri)
     coreferences = list_coreferences(coreferences_graph)
-    update_system_graph(coreferences_graph, dataset) # RDFS and OWL statements go here
+    # update_system_graph(coreferences_graph, dataset) # RDFS and OWL statements go here
     graphs = [dereference(coreference, dataset) for coreference in coreferences]
     for graph in graphs:
         # without this if the graphs with same id are repeated
@@ -72,16 +126,17 @@ def find_coreferences(uri):
     return coreferences_graph
 
 def list_coreferences(graph):
+    '''Returns a list of coreferences. Accepts a graph that came from sameas.org.'''
     query = 'select ?o where { ?s owl:sameAs ?o . }'
     result = graph.query(query)
     coreferences = [row[0] for row in result]
     return coreferences
 
-def update_system_graph(graph, dataset):
-    default_graph_name = 'urn:x-rdflib:default'
-    system_graph = dataset.get_context(default_graph_name)
-    system_graph += graph
-    return None
+# def update_system_graph(graph, dataset):
+#     default_graph_name = 'urn:x-rdflib:default'
+#     system_graph = dataset.get_context(default_graph_name)
+#     system_graph += graph
+#     return None
 
 def dereference(uri, dataset):
     '''Parse data from `uri`, return triples in form of named graph'''
@@ -90,13 +145,12 @@ def dereference(uri, dataset):
         identifier = graph_name
     else:
         identifier = NAMESPACE[join('graph', uuid4().hex)]
-        update_metagraph(identifier, uri, dataset)
 
     # TODO: check that the graph is properly removed
     graph = dataset.graph(identifier=identifier)
 
     # Check if URI was dereferenced > 1 day ago
-    if check_timestamp(dataset, uri) and url_exists(uri, timeout=2):
+    if check_timestamp(dataset, uri) and url_exists(uri, timeout=5):
         # remove the old graph
         dataset.remove_graph(identifier)
         graph = dataset.graph(identifier=identifier)
@@ -107,11 +161,17 @@ def dereference(uri, dataset):
             # <class 'rdflib.parser.Parser'>)
             print e
 
+    # timestamp of last download
+    update_metagraph(identifier, uri, dataset)
+
     return graph
 
 def find_named_graph(uri, dataset):
     '''I have a system graph called abs:metagraph. It is a special graph
     that contains metadata about other named graphs.
+
+    The metadata is the last time a URI was accessed and which named
+    graph corresponds to which URI.
     '''
     metagraph_id = NAMESPACE.metagraph
     metagraph = dataset.graph(metagraph_id)
@@ -124,6 +184,11 @@ def find_named_graph(uri, dataset):
         return None
 
 def update_metagraph(identifier, uri, dataset):
+    '''Update a metagraph, which contains metadata about the named graphs.
+
+    Namely, create triples that relate a named graph with a
+    corresponding URI, and timestamp, when the URI was dereferenced.
+    '''
     identifier = URIRef(identifier)
     uri = URIRef(uri)
 
@@ -151,13 +216,16 @@ def check_timestamp(dataset, uri):
     query = query_template.format(uri)
 
     result = metagraph.query(query)
-    date = result.bindings[0]['date'].toPython()
 
-    timedelta = datetime.now() - date
-    if timedelta.days >= 1:
-        return True
+    if result.bindings:
+        date = result.bindings[0]['date'].toPython()
+        timedelta = datetime.now() - date
+        if timedelta.days >= 1:
+            return True
+        else:
+            return False
     else:
-        return False
+        return True
 
 def query_union(cg, uri):
     '''Query union of graphs to get all triples, where URI is used.
@@ -212,6 +280,7 @@ def query_union(cg, uri):
     query_object = query_template_object.format(uri)
 
     # OWL namespace understood by default
+    # TODO: move to the global scope?
     cg.bind('owl', 'http://www.w3.org/2002/07/owl#')
 
     subjects = cg.query(query_subject)
@@ -239,10 +308,6 @@ def get_graph(uri):
 
     graph = ds.get_context(uri)
 
-    # crude way to dereference URI of the graph, if it doesn't exist
-    if not len(graph):
-        load_rdf(ds, uri)
-
     triples = graph.triples((None, None, None))
     return triples
 
@@ -252,3 +317,12 @@ def remove_graph(uri):
     ds.remove_context(uri)
 
     return None
+
+def original():
+    '''Returns a named graph that corresponds to an original FOAF file.
+
+    '''
+    global ds
+    foaf_graph_name = 'http://abstractnonsense.net/graph/i'
+    g = ds.graph(identifier=foaf_graph_name)
+    return g
